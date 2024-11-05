@@ -1,5 +1,5 @@
 {
-  "name": "CSE341",
+  "name": "cse341",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -11,9 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
-    "express": "^4.16.3"
+    "dotenv": "^16.4.5",
+    "express": "^4.16.3",
+    "is-binary-path": "^3.0.0",
+    "mongodb": "^6.10.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.4"
+    "nodemon": "^3.1.7"
   }
 }
