@@ -5,10 +5,9 @@
     "description": "Users API",
     "version": "1.0.0"
   },
-  "host": "localhost:3000",
+  "host": "cse341-winter24-rd6a.onrender.com",
   "basePath": "/",
   "schemes": [
-    "http",
     "https"
   ],
   "paths": {
