@@ -14,7 +14,7 @@ const options = {
         description: 'Local Development Server',
       },
       {
-        url: 'https://your-render-url.onrender.com',
+        url: 'https://cse341-winter24-rd6a.onrender.com',
         description: 'Production Server',
       },
     ],
