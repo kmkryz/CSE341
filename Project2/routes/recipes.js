@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const recipesController = require('../controllers/recipes');
 const { recipeValidationRules, validate } = require('../middleware/validate');
+const mongodb = require('../db/connect');
 
 /**
  * @swagger

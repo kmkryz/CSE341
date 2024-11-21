@@ -1,17 +1,28 @@
 const mongodb = require('../db/connect');
 const ObjectId = require('mongodb').ObjectId;
 
+// const getAllRecipes = async (req, res) => {
+//   try {
+//     const result = await mongodb
+//       .getDb()
+//       .db()
+//       .collection('recipes')
+//       .find();
+//     const recipes = await result.toArray();
+//     res.setHeader('Content-Type', 'application/json');
+//     res.status(200).json(recipes);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 const getAllRecipes = async (req, res) => {
   try {
-    const result = await mongodb
-      .getDb()
-      .db()
-      .collection('recipes')
-      .find();
-    const recipes = await result.toArray();
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(recipes);
+    const db = mongodb.getDb(); // getDb() already returns the database instance
+    const result = await db.collection('recipes').find().toArray();
+    res.status(200).json(result);
   } catch (err) {
+    console.error('Error fetching recipes:', err);
     res.status(500).json({ message: err.message });
   }
 };
