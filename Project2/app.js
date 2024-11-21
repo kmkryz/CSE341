@@ -10,6 +10,18 @@ const userRoutes = require('./routes/users');
 const port = process.env.PORT || 8080;
 const app = express();
 
+// Initialize database before starting server
+const startServer = async () => {
+  try {
+    await mongodb.initDb();
+    
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+  }
+};
 
 // Root route
 app.get('/', (req, res) => {
@@ -34,11 +46,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-mongodb.initDb((err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    app.listen(port);
-    console.log(`Connected to DB and listening on ${port}`);
-  }
-});
+// Start the server
+startServer();
