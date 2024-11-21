@@ -1,68 +1,68 @@
 const mongodb = require('../db/connect');
 const ObjectId = require('mongodb').ObjectId;
 
-const getAllUsers = async (req, res) => {
+const getAllRecipes = async (req, res) => {
   try {
     const db = mongodb.getDb();
-    const result = await db.collection('users').find().toArray();
+    const result = await db.collection('recipes').find().toArray();
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const getUserById = async (req, res) => {
+const getRecipeById = async (req, res) => {
   try {
     const db = mongodb.getDb();
-    const userId = new ObjectId(req.params.id);
-    const result = await db.collection('users').findOne({ _id: userId });
+    const recipeId = new ObjectId(req.params.id);
+    const result = await db.collection('recipes').findOne({ _id: recipeId });
     if (result) {
       res.status(200).json(result);
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'Recipe not found' });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const createUser = async (req, res) => {
+const createRecipe = async (req, res) => {
   try {
     const db = mongodb.getDb();
-    const user = req.body;
-    const result = await db.collection('users').insertOne(user);
+    const recipe = req.body;
+    const result = await db.collection('recipes').insertOne(recipe);
     res.status(201).json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const updateUser = async (req, res) => {
+const updateRecipe = async (req, res) => {
   try {
     const db = mongodb.getDb();
-    const userId = new ObjectId(req.params.id);
-    const user = req.body;
-    const result = await db.collection('users')
-      .replaceOne({ _id: userId }, user);
+    const recipeId = new ObjectId(req.params.id);
+    const recipe = req.body;
+    const result = await db.collection('recipes')
+      .replaceOne({ _id: recipeId }, recipe);
     if (result.modifiedCount > 0) {
       res.status(204).send();
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'Recipe not found' });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteRecipe = async (req, res) => {
   try {
     const db = mongodb.getDb();
-    const userId = new ObjectId(req.params.id);
-    const result = await db.collection('users').deleteOne({ _id: userId });
+    const recipeId = new ObjectId(req.params.id);
+    const result = await db.collection('recipes').deleteOne({ _id: recipeId });
     if (result.deletedCount > 0) {
       res.status(200).send();
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'Recipe not found' });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -70,9 +70,9 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser
+  getAllRecipes,
+  getRecipeById,
+  createRecipe,
+  updateRecipe,
+  deleteRecipe
 };
