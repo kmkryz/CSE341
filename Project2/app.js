@@ -14,11 +14,21 @@ const indexRoutes = require('./routes/index');
 const port = process.env.PORT || 8080;
 const app = express();
 
+// Add environment variable validation
+if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
+    console.warn('GitHub OAuth credentials not found in environment variables');
+}
+
 // Configure Passport first
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const BASE_URL = isDevelopment 
+    ? 'http://localhost:8080'
+    : 'https://cse341-winter24-rd6a.onrender.com';
+
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: "http://localhost:8080/auth/github/callback"  // Match this exactly with GitHub OAuth settings
+  callbackURL: `${BASE_URL}/auth/github/callback`
 }, function(accessToken, refreshToken, profile, done) {
   console.log('GitHub Profile:', profile); // Debug log
   return done(null, profile);
@@ -37,12 +47,14 @@ passport.deserializeUser((user, done) => {
 // Configure middleware
 app.use(bodyParser.json());
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'secret',
+  secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: true,
   saveUninitialized: true,
   cookie: {
-    secure: false, //set to true if using https
-    maxAge: 24 * 60 * 60 * 1000
+    secure: !isDevelopment, // true in production
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
@@ -52,9 +64,9 @@ app.use(passport.session());
 
 // CORS configuration
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type']
+  origin: isDevelopment ? 'http://localhost:8080' : 'https://your-render-app-name.onrender.com',
+  methods: 'GET,POST,PUT,DELETE,PATCH',
+  credentials: true
 }));
 
 // Debug middleware
