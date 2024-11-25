@@ -1,23 +1,32 @@
 const swaggerAutogen = require('swagger-autogen')();
 
 const doc = {
-    swagger: "2.0",
+    openapi: '3.0.0',
     info: {
         title: 'Recipe API',
         description: 'Recipe API Documentation',
         version: '1.0.0'
     },
-    host: process.env.NODE_ENV === 'production' 
-        ? 'recipe-api-qqxm.onrender.com'
-        : 'localhost:8080',
-    schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],
-    securityDefinitions: {
-        oauth2: {
-            type: 'oauth2',
-            flow: 'implicit',
-            authorizationUrl: 'https://github.com/login/oauth/authorize',
-            scopes: {
-                'user:email': 'Read user email address'
+    servers: [
+        {
+            url: process.env.NODE_ENV === 'production'
+                ? 'https://recipe-api-qqxm.onrender.com'
+                : 'http://localhost:8080',
+            description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
+        }
+    ],
+    components: {
+        securitySchemes: {
+            oauth2: {
+                type: 'oauth2',
+                flows: {
+                    implicit: {
+                        authorizationUrl: 'https://github.com/login/oauth/authorize',
+                        scopes: {
+                            'user:email': 'Read user email address'
+                        }
+                    }
+                }
             }
         }
     }
