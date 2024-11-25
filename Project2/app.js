@@ -38,10 +38,11 @@ passport.deserializeUser((user, done) => {
 app.use(bodyParser.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: {
-    secure: false // set to true if using https
+    secure: false, //set to true if using https
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
@@ -102,3 +103,16 @@ const startServer = async () => {
 };
 
 startServer();
+
+app.get('/auth/github/callback', 
+    passport.authenticate('github', { 
+        failureRedirect: '/login',
+        session: true  // Explicitly enable session
+    }),
+    (req, res) => {
+        // Log successful authentication
+        console.log('Authentication successful, session:', req.session);
+        console.log('User:', req.user);
+        res.redirect('/');
+    }
+);
