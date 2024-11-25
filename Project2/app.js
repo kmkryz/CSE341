@@ -7,6 +7,7 @@ const passport = require('passport');
 const session = require('express-session');
 const GitHubStrategy = require('passport-github2').Strategy;
 const cors = require('cors');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const recipeRoutes = require('./routes/recipes');
 const userRoutes = require('./routes/users');
@@ -46,16 +47,33 @@ passport.deserializeUser((user, done) => {
 
 // Configure middleware
 app.use(bodyParser.json());
+
+// Create MongoDB store
+const store = new MongoDBStore({
+    uri: process.env.NODE_ENV === 'production' 
+        ? process.env.MONGODB_URI 
+        : process.env.MONGODB_URL,
+    collection: 'sessions',
+    expires: 1000 * 60 * 60 * 24 // 24 hours
+});
+
+// Catch errors
+store.on('error', function(error) {
+    console.log('Session store error:', error);
+});
+
+// Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your_secret_key',
-  resave: true,
-  saveUninitialized: true,
-  cookie: {
-    secure: !isDevelopment, // true in production
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
+    secret: process.env.SESSION_SECRET || 'secret',
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        secure: process.env.NODE_ENV === 'production', // true in production
+        sameSite: 'lax'
+    },
+    store: store,
+    resave: false,
+    saveUninitialized: false,
+    name: 'sessionId'
 }));
 
 // Initialize Passport and restore authentication state from session
