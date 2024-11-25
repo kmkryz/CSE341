@@ -8,7 +8,8 @@ const session = require('express-session');
 const GitHubStrategy = require('passport-github2').Strategy;
 const cors = require('cors');
 const MongoDBStore = require('connect-mongodb-session')(session);
-
+require('./middleware/authenticate');
+require('dotenv').config();
 const recipeRoutes = require('./routes/recipes');
 const userRoutes = require('./routes/users');
 const indexRoutes = require('./routes/index');
@@ -19,6 +20,18 @@ const app = express();
 if (!process.env.GITHUB_CLIENT_ID || !process.env.GITHUB_CLIENT_SECRET) {
     console.warn('GitHub OAuth credentials not found in environment variables');
 }
+
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    await mongodb.initDb();
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+  }
+};
 
 // Configure Passport first
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -52,9 +65,7 @@ app.use(bodyParser.json());
 
 // Create MongoDB store
 const store = new MongoDBStore({
-    uri: process.env.NODE_ENV === 'production' 
-        ? process.env.MONGODB_URI 
-        : process.env.MONGODB_URL,
+    uri: process.env.MONGODB_URI,
     collection: 'sessions',
     expires: 1000 * 60 * 60 * 24 // 24 hours
 });
@@ -65,18 +76,18 @@ store.on('error', function(error) {
 });
 
 // Session configuration
-// app.use(session({
-//     secret: process.env.SESSION_SECRET || 'secret',
-//     store: store,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//         maxAge: 1000 * 60 * 60 * 24, // 24 hours
-//         secure: process.env.NODE_ENV === 'production', // true in production
-//         sameSite: 'lax'
-//     },
-//     name: 'sessionId'
-// }));
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'secret',
+    store: store,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        secure: process.env.NODE_ENV === 'production', // true in production
+        sameSite: 'lax'
+    },
+    name: 'sessionId'
+}));
 
 // Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
@@ -133,17 +144,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-// Initialize database and start server
-const startServer = async () => {
-  try {
-    await mongodb.initDb();
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
-  } catch (err) {
-    console.error('Failed to start server:', err);
-  }
-};
+
 
 startServer();
 
