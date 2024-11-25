@@ -11,7 +11,7 @@ const initDb = async () => {
     return db;
   }
   try {
-    const client = await MongoClient.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+    const client = await MongoClient.connect(connectionString);
     db = client.db();
     console.log('Database initialized');
     return db;
