@@ -9,46 +9,15 @@ router.get('/', (req, res) => {
     console.log('Is Authenticated:', req.isAuthenticated());
     
     res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Recipe API</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                .nav-link { margin: 10px 0; }
-                .button {
-                    padding: 10px 20px;
-                    background-color: #007bff;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    display: inline-block;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Welcome to Recipe API</h1>
-            ${req.isAuthenticated() 
-                ? `
-                    <div>
-                        <p>Logged in as: ${req.user.username}</p>
-                        <div class="nav-link">
-                            <a href="/api-docs" class="button">API Documentation</a>
-                        </div>
-                        <div class="nav-link">
-                            <a href="/logout" class="button">Logout</a>
-                        </div>
-                    </div>
-                    `
-                : `
-                    <div class="nav-link">
-                        <a href="/login" class="button">Login with GitHub</a>
-                    </div>
-                    `
-            }
-        </body>
-        </html>
+        <h1>Welcome to Recipe API</h1>
+        ${req.isAuthenticated() 
+            ? `<p>Logged in as ${req.user.username}</p>
+               <a href="/logout">Logout</a>
+               <p><a href="/api-docs">API Documentation</a></p>`
+            : `<p><a href="/login">Login with GitHub</a></p>`
+        }
     `);
+
 });
 
 // Login route

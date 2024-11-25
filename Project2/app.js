@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongodb = require('./db/connect');
 const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./swagger');
+const swaggerDocument = require('./swagger.json');
 const passport = require('passport');
 const session = require('express-session');
 const GitHubStrategy = require('passport-github2').Strategy;
@@ -66,7 +66,7 @@ store.on('error', function(error) {
 
 // Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your_secret_key',
+    secret: process.env.SESSION_SECRET || 'secret',
     store: store,
     resave: false,
     saveUninitialized: false,
@@ -84,7 +84,7 @@ app.use(passport.session());
 
 // CORS configuration
 app.use(cors({
-  origin: isDevelopment ? 'http://localhost:8080' : 'https://your-render-app-name.onrender.com',
+  origin: isDevelopment ? 'http://localhost:8080' : 'https://cse341-winter24-rd6a.onrender.com',
   methods: 'GET,POST,PUT,DELETE,PATCH',
   credentials: true
 }));
@@ -98,23 +98,34 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve);
+app.get('/api-docs', swaggerUi.setup(swaggerDocument, {
+    explorer: true,
+    swaggerOptions: {
+        url: '/swagger.json',
+        oauth2RedirectUrl: process.env.NODE_ENV === 'production'
+            ? 'https://cse341-winter24-rd6a.onrender.com/api-docs/oauth2-redirect.html'
+            : 'http://localhost:8080/api-docs/oauth2-redirect.html'
+    }
+}));
+
 app.use('/recipes', recipeRoutes);
 app.use('/users', userRoutes);
 app.use('/', indexRoutes);
 
-// Home route
-app.get('/', (req, res) => {
-  res.send(`
-    <h1>Welcome to Recipe API</h1>
-    ${req.isAuthenticated() 
-      ? `<p>Logged in as ${req.user.username}</p>
-         <a href="/logout">Logout</a>
-         <p><a href="/api-docs">API Documentation</a></p>`
-      : `<p><a href="/login">Login with GitHub</a></p>`
-    }
-  `);
-});
+
+app.get('/auth/github/callback', 
+  passport.authenticate('github', { 
+      failureRedirect: '/login',
+      session: true  // Explicitly enable session
+  }),
+  (req, res) => {
+      // Log successful authentication
+      console.log('Authentication successful, session:', req.session);
+      console.log('User:', req.user);
+      res.redirect('/');
+  }
+);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -136,15 +147,3 @@ const startServer = async () => {
 
 startServer();
 
-app.get('/auth/github/callback', 
-    passport.authenticate('github', { 
-        failureRedirect: '/login',
-        session: true  // Explicitly enable session
-    }),
-    (req, res) => {
-        // Log successful authentication
-        console.log('Authentication successful, session:', req.session);
-        console.log('User:', req.user);
-        res.redirect('/');
-    }
-);
