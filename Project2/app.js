@@ -30,7 +30,7 @@ const BASE_URL = isDevelopment
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
       callbackURL: process.env.NODE_ENV === 'production'
-          ? 'https://recipe-api-qqxm.onrender.com/auth/github/callback'
+          ? 'https://cse341-winter24-rd6a.onrender.com/auth/github/callback'
           : 'http://localhost:8080/auth/github/callback'
   }, function(accessToken, refreshToken, profile, done) {
       console.log('GitHub profile:', profile);
