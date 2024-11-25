@@ -4,12 +4,17 @@ const passport = require('passport');
 
 // Home page route
 router.get('/', (req, res) => {
+    // #swagger.tags = ['Home']
+    const apiDocsUrl = process.env.NODE_ENV === 'production'
+    ? 'https://cse341-winter24-rd6a.onrender.com/api-docs'
+    : 'http://localhost:8080/api-docs';
     res.send(`
         <h1>Welcome to Recipe API</h1>
-        ${req.user 
+        ${req.isAuthenticated() 
             ? `<p>Logged in as ${req.user.username}</p>
-               <a href="/logout">Logout</a>`
-            : `<a href="/login">Login with GitHub</a>`
+               <p><a href="/logout">Logout</a></p>
+               <p><a href="${apiDocsUrl}">API Documentation</a></p>`
+            : `<p><a href="/login">Login with GitHub</a></p>`
         }
     `);
 });

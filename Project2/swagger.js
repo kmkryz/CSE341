@@ -1,26 +1,18 @@
-const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerAutogen = require('swagger-autogen')();
 
-const options = {
-  definition: {
-    openapi: '3.0.0',
+const doc = {
     info: {
-      title: 'Recipe Management API',
-      version: '1.0.0',
-      description: 'API for managing recipes and users',
+        title: 'Recipe API',
+        description: 'Recipe API Documentation',
     },
-    servers: [
-      {
-        url: 'http://localhost:8080',
-        description: 'Local Development Server',
-      },
-      {
-        url: 'https://cse341-winter24-rd6a.onrender.com',
-        description: 'Production Server',
-      },
-    ],
-  },
-  apis: ['./routes/*.js'], // files containing annotations
+    host: process.env.NODE_ENV === 'production' 
+        ? 'recipe-api-qqxm.onrender.com'  // Replace with your actual Render.com URL
+        : 'localhost:8080',
+    schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],
 };
 
-const swaggerSpec = swaggerJsdoc(options);
-module.exports = swaggerSpec;
+const outputFile = './swagger.json';
+const endpointsFiles = ['./routes/index.js', './routes/recipes.js', './routes/users.js'];
+
+// Generate swagger.json
+swaggerAutogen(outputFile, endpointsFiles, doc);
