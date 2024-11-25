@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 
+// Use sub-routers for different routes
+router.use('/api-docs', require('./swagger'));
+router.use('/recipes', require('./recipes'));
+router.use('/users', require('./users'));
+
 // Home route
 router.get('/', (req, res) => {
     console.log('Session:', req.session);
@@ -17,7 +22,6 @@ router.get('/', (req, res) => {
             : `<p><a href="/login">Login with GitHub</a></p>`
         }
     `);
-
 });
 
 // Login route

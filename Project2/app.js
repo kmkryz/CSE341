@@ -108,20 +108,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', swaggerUi.setup(swaggerDocument, {
-    explorer: true,
-    swaggerOptions: {
-        url: '/swagger.json',
-        oauth2RedirectUrl: process.env.NODE_ENV === 'production'
-            ? 'https://cse341-winter24-rd6a.onrender.com/api-docs/oauth2-redirect.html'
-            : 'http://localhost:8080/api-docs/oauth2-redirect.html'
-    }
-}));
-
-app.use('/recipes', recipeRoutes);
-app.use('/users', userRoutes);
 app.use('/', indexRoutes);
 
 
