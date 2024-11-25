@@ -65,18 +65,18 @@ store.on('error', function(error) {
 });
 
 // Session configuration
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret',
-    store: store,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        secure: process.env.NODE_ENV === 'production', // true in production
-        sameSite: 'lax'
-    },
-    name: 'sessionId'
-}));
+// app.use(session({
+//     secret: process.env.SESSION_SECRET || 'secret',
+//     store: store,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         maxAge: 1000 * 60 * 60 * 24, // 24 hours
+//         secure: process.env.NODE_ENV === 'production', // true in production
+//         sameSite: 'lax'
+//     },
+//     name: 'sessionId'
+// }));
 
 // Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
