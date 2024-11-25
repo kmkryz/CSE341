@@ -10,7 +10,7 @@ const doc = {
     servers: [
         {
             url: process.env.NODE_ENV === 'production'
-                ? 'https://recipe-api-qqxm.onrender.com'
+                ? 'https://cse341-winter24-rd6a.onrender.com'
                 : 'http://localhost:8080',
             description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
         }

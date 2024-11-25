@@ -102,9 +102,11 @@ app.use(cors({
 
 // Debug middleware
 app.use((req, res, next) => {
-  console.log('Session:', req.session);
-  console.log('User:', req.user);
-  console.log('Is Authenticated:', req.isAuthenticated());
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Session:', req.session);
+    console.log('User:', req.user);
+    console.log('Is Authenticated:', req.isAuthenticated());
+  }
   next();
 });
 
