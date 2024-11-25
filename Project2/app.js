@@ -26,14 +26,16 @@ const BASE_URL = isDevelopment
     ? 'http://localhost:8080'
     : 'https://cse341-winter24-rd6a.onrender.com';
 
-passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: `${BASE_URL}/auth/github/callback`
-}, function(accessToken, refreshToken, profile, done) {
-  console.log('GitHub Profile:', profile); // Debug log
-  return done(null, profile);
-}));
+    passport.use(new GitHubStrategy({
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.NODE_ENV === 'production'
+          ? 'https://recipe-api-qqxm.onrender.com/auth/github/callback'
+          : 'http://localhost:8080/auth/github/callback'
+  }, function(accessToken, refreshToken, profile, done) {
+      console.log('GitHub profile:', profile);
+      return done(null, profile);
+  }));
 
 passport.serializeUser((user, done) => {
   console.log('Serializing user:', user); // Debug log
@@ -64,15 +66,15 @@ store.on('error', function(error) {
 
 // Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret',
+    secret: process.env.SESSION_SECRET || 'your_secret_key',
+    store: store,
+    resave: false,
+    saveUninitialized: false,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         secure: process.env.NODE_ENV === 'production', // true in production
         sameSite: 'lax'
     },
-    store: store,
-    resave: false,
-    saveUninitialized: false,
     name: 'sessionId'
 }));
 
