@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const recipesController = require('../controllers/recipes');
 const { recipeValidationRules, validate } = require('../middleware/validate');
-
+const isAuthenticated = require('../middleware/authenticate');
 
 /**
  * @swagger
@@ -139,7 +139,7 @@ router.get('/:id', recipesController.getRecipeById);
  *       500:
  *         description: Server error
  */
-router.post('/', recipeValidationRules(), validate, recipesController.createRecipe);
+router.post('/', isAuthenticated, recipeValidationRules(), validate, recipesController.createRecipe);
 
 /**
  * @swagger
@@ -170,7 +170,7 @@ router.post('/', recipeValidationRules(), validate, recipesController.createReci
  *       500:
  *         description: Server error
  */
-router.put('/:id', recipeValidationRules(), validate, recipesController.updateRecipe);
+router.put('/:id', isAuthenticated, recipeValidationRules(), validate, recipesController.updateRecipe);
 
 /**
  * @swagger
@@ -195,6 +195,6 @@ router.put('/:id', recipeValidationRules(), validate, recipesController.updateRe
  *       500:
  *         description: Server error
  */
-router.delete('/:id', recipesController.deleteRecipe);
+router.delete('/:id', isAuthenticated, recipesController.deleteRecipe);
 
 module.exports = router;

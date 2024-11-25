@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const usersController = require('../controllers/users');
 const { userValidationRules, validate } = require('../middleware/validate');
+const isAuthenticated = require('../middleware/authenticate');
 
 /**
  * @swagger
@@ -117,7 +118,7 @@ router.get('/:id', usersController.getUserById);
  *       500:
  *         description: Server error
  */
-router.post('/', userValidationRules(), validate, usersController.createUser);
+router.post('/', isAuthenticated, userValidationRules(), validate, usersController.createUser);
 
 /**
  * @swagger
@@ -148,7 +149,7 @@ router.post('/', userValidationRules(), validate, usersController.createUser);
  *       500:
  *         description: Server error
  */
-router.put('/:id', userValidationRules(), validate, usersController.updateUser);
+router.put('/:id', isAuthenticated, userValidationRules(), validate, usersController.updateUser);
 
 /**
  * @swagger
@@ -173,6 +174,6 @@ router.put('/:id', userValidationRules(), validate, usersController.updateUser);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', usersController.deleteUser);
+router.delete('/:id', isAuthenticated, usersController.deleteUser);
 
 module.exports = router;

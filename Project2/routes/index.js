@@ -1,13 +1,39 @@
-const router = require('express').Router()
+const express = require('express');
+const router = express.Router();
+const passport = require('passport');
 
-router.use('/', require('./swagger'))
-
+// Home page route
 router.get('/', (req, res) => {
-    // #swagger.tags = ['Home']
-    res.send('Hello World!')
-})
+    res.send(`
+        <h1>Welcome to Recipe API</h1>
+        ${req.user 
+            ? `<p>Logged in as ${req.user.username}</p>
+               <a href="/logout">Logout</a>`
+            : `<a href="/login">Login with GitHub</a>`
+        }
+    `);
+});
 
-router.use('/users', require('./users'))
+// Login route
+router.get('/login', passport.authenticate('github', { 
+    scope: ['user:email']
+}));
 
+// GitHub callback route
+router.get('/auth/github/callback', 
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    (req, res) => {
+        console.log('Auth successful, user:', req.user);
+        res.redirect('/');
+    }
+);
 
-module.exports = router
+// Logout route
+router.get('/logout', (req, res, next) => {
+    req.logout((err) => {
+        if (err) { return next(err); }
+        res.redirect('/');
+    });
+});
+
+module.exports = router;
