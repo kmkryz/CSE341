@@ -73,11 +73,14 @@ if (process.env.NODE_ENV === 'production') {
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: process.env.NODE_ENV === 'production'
-        ? 'https://cse341-winter24-rd6a.onrender.com/auth/github/callback'
-        : 'http://localhost:8080/auth/github/callback'
+    callbackURL: `${BASE_URL}/auth/github/callback`
 }, function(accessToken, refreshToken, profile, done) {
-    console.log('GitHub profile:', profile);
+    console.log('GitHub strategy callback');
+    console.log('Profile:', profile);
+    console.log('Access Token:', accessToken);
+    
+    // Store the access token in the user profile
+    profile.accessToken = accessToken;
     return done(null, profile);
 }));
 
@@ -111,18 +114,38 @@ app.use('/', indexRoutes);
 
 // 9. OAuth callback route
 app.get('/auth/github/callback', 
+    (req, res, next) => {
+        console.log('Received callback from GitHub');
+        next();
+    },
     passport.authenticate('github', { 
         failureRedirect: '/login',
-        session: true
+        session: true,
+        failureMessage: true
     }),
     (req, res) => {
+        console.log('GitHub authentication completed');
+        console.log('Session ID:', req.sessionID);
+        console.log('Full session:', req.session);
+        console.log('User:', req.user);
+        
         if (!req.user) {
             console.error('Authentication successful but no user object');
             return res.redirect('/login');
         }
-        console.log('Authentication successful, session:', req.session);
-        console.log('User:', req.user);
-        res.redirect('/');
+        
+        // Set a flash message or session variable
+        req.session.authSuccess = true;
+        
+        // Ensure session is saved before redirect
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.redirect('/login');
+            }
+            console.log('Session saved successfully');
+            res.redirect('/');
+        });
     }
 );
 
