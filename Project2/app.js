@@ -49,7 +49,10 @@ store.on('error', function(error) {
 
 // 4. Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret',
+    secret: process.env.SESSION_SECRET || (() => {
+        console.error('No SESSION_SECRET environment variable set!');
+        process.exit(1);
+    })(),
     store: store,
     resave: false,
     saveUninitialized: false,
