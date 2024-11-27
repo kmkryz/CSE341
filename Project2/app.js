@@ -33,7 +33,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['set-cookie']
+    exposedHeaders: ['Set-Cookie']
 }));
 
 // 3. Session store setup
@@ -49,21 +49,25 @@ store.on('error', function(error) {
 
 // 4. Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET || (() => {
-        console.error('No SESSION_SECRET environment variable set!');
-        process.exit(1);
-    })(),
+    secret: process.env.SESSION_SECRET,
     store: store,
     resave: false,
     saveUninitialized: false,
     cookie: {
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        httpOnly: true
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        httpOnly: true,
+        domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
     },
-    name: 'sessionId'
+    name: 'sessionId',
+    proxy: process.env.NODE_ENV === 'production'
 }));
+
+// Add trust proxy configuration
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1); // trust first proxy
+}
 
 // 5. Passport configuration
 passport.use(new GitHubStrategy({
@@ -112,6 +116,10 @@ app.get('/auth/github/callback',
         session: true
     }),
     (req, res) => {
+        if (!req.user) {
+            console.error('Authentication successful but no user object');
+            return res.redirect('/login');
+        }
         console.log('Authentication successful, session:', req.session);
         console.log('User:', req.user);
         res.redirect('/');
