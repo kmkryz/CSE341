@@ -5,7 +5,7 @@ const passport = require('passport');
 const session = require('express-session');
 const GitHubStrategy = require('passport-github2').Strategy;
 const cors = require('cors');
-const MongoDBStore = require('connect-mongodb-session')(session);
+const MongoStore = require('connect-mongo');
 require('dotenv').config();
 const indexRoutes = require('./routes/index');
 
@@ -37,31 +37,23 @@ app.use(cors({
 }));
 
 // 3. Session store setup
-const store = new MongoDBStore({
-    uri: process.env.MONGODB_URI,
-    collection: 'sessions',
-    expires: 1000 * 60 * 60 * 24 // 24 hours
-});
-
-store.on('error', function(error) {
-    console.log('Session store error:', error);
-});
-
-// 4. Session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    store: store,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        ttl: 24 * 60 * 60, // 1 day
+        autoRemove: 'native',
+        touchAfter: 24 * 3600 // time period in seconds
+    }),
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        httpOnly: true,
-        domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
+        httpOnly: true
     },
-    name: 'sessionId',
-    proxy: process.env.NODE_ENV === 'production'
+    name: 'sessionId'
 }));
 
 // Add trust proxy configuration
@@ -85,13 +77,25 @@ passport.use(new GitHubStrategy({
 }));
 
 passport.serializeUser((user, done) => {
-    console.log('Serializing user:', user);
-    done(null, user);
+    console.log('Serializing user:', user.id);
+    done(null, user.id);
 });
 
-passport.deserializeUser((user, done) => {
-    console.log('Deserializing user:', user);
-    done(null, user);
+passport.deserializeUser(async (id, done) => {
+    console.log('Deserializing user:', id);
+    try {
+        // If you're storing users in MongoDB, fetch from there
+        // const user = await User.findById(id);
+        // For now, we'll create a simple user object
+        const user = {
+            id: id,
+            username: 'kmkryz' // You might want to store this in session during serialize
+        };
+        done(null, user);
+    } catch (err) {
+        console.error('Deserialization error:', err);
+        done(err, null);
+    }
 });
 
 // 6. Initialize Passport middleware
@@ -114,10 +118,6 @@ app.use('/', indexRoutes);
 
 // 9. OAuth callback route
 app.get('/auth/github/callback', 
-    (req, res, next) => {
-        console.log('Received callback from GitHub');
-        next();
-    },
     passport.authenticate('github', { 
         failureRedirect: '/login',
         session: true,
@@ -126,24 +126,19 @@ app.get('/auth/github/callback',
     (req, res) => {
         console.log('GitHub authentication completed');
         console.log('Session ID:', req.sessionID);
-        console.log('Full session:', req.session);
-        console.log('User:', req.user);
         
-        if (!req.user) {
-            console.error('Authentication successful but no user object');
-            return res.redirect('/login');
-        }
-        
-        // Set a flash message or session variable
-        req.session.authSuccess = true;
-        
-        // Ensure session is saved before redirect
+        // Force session save
         req.session.save((err) => {
             if (err) {
                 console.error('Session save error:', err);
                 return res.redirect('/login');
             }
-            console.log('Session saved successfully');
+            
+            // Log the session after save
+            console.log('Session after save:', req.session);
+            console.log('User after save:', req.user);
+            console.log('isAuthenticated:', req.isAuthenticated());
+            
             res.redirect('/');
         });
     }
